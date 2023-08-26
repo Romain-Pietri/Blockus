@@ -64,38 +64,36 @@ int main() {
         
         std::cout << "Nouvelle connexion acceptée." << std::endl;
 
-        // Recevoir et afficher les données du client
-        char buffer[1024];
-        int bytesRead = recv(clientSocket, buffer, sizeof(buffer), 0);
-        if (bytesRead <= 0) {
-            std::cerr << "Erreur lors de la réception des données." << std::endl;
-            close(clientSocket);
-            continue;
-        }
 
-        buffer[bytesRead] = '\0';
-          
-        std::cout << "Message reçu du client : " << buffer << std::endl;
-        //decrypter le message recu et le stocker dans une variable string
-        std::vector<unsigned char> decrypted = dechiffrement(rsa_private_key, reinterpret_cast<const unsigned char*>(buffer), strlen(buffer));
-        std::string message = reinterpret_cast<const char*>(decrypted.data());
-        std::cout << "Message reçu du client : " << message << std::endl;
-        
-      
-        if(clientSocket){
-        // Envoyer un message au client
-            const char *messageToSend = "<NAME> !";
-            //chiffrer le message a envoyer
-            std::vector<unsigned char> encrypted = chiffrement(rsa_public_key, reinterpret_cast<const unsigned char*>(messageToSend), strlen(messageToSend));
-            //mettre le message chiffrer dans une string
-            messageToSend = reinterpret_cast<const char*>(encrypted.data());
+                // Recevoir la taille des données chiffrées
+        size_t encrypted_size;
+        recv(clientSocket, &encrypted_size, sizeof(encrypted_size), 0);
 
-            send(clientSocket, messageToSend, strlen(messageToSend)+1, MSG_CONFIRM | MSG_NOSIGNAL );
-            sleep(1);
-            shutdown(clientSocket , SHUT_RDWR);// Arrêter le flux en écriture sur le socket
-        }
-        // Fermer la connexion avec le client
-        close(clientSocket);
+        // Recevoir les données chiffrées
+        std::vector<unsigned char> encrypted(encrypted_size);
+        recv(clientSocket, encrypted.data(), encrypted_size, 0);
+
+        // Déchiffrer les données
+        std::vector<unsigned char> decrypted = dechiffrement(rsa_private_key, encrypted.data(), encrypted_size);
+        std::string decrypted_string(decrypted.begin(), decrypted.end());
+        std::cout << "Message déchiffré : " << decrypted_string << std::endl;
+
+        // Traiter le message déchiffré
+        // ...
+
+        // Chiffrer et envoyer une réponse
+        const char *messageToSend = "<NAME> !";
+        std::vector<unsigned char> response_encrypted = chiffrement(rsa_public_key, reinterpret_cast<const unsigned char*>(messageToSend), strlen(messageToSend));
+        size_t response_size = response_encrypted.size();
+
+        // Envoyer la taille des données chiffrées en réponse
+        send(clientSocket, &response_size, sizeof(response_size), 0);
+
+        // Envoyer les données chiffrées en réponse
+        send(clientSocket, response_encrypted.data(), response_size, 0);
+
+        // Fermer la connexion ou attendre de nouvelles données...
+
     }
     RSA_free(rsa_private_key);
     RSA_free(rsa_public_key);
