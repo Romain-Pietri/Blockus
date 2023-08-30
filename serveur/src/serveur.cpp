@@ -7,9 +7,7 @@
 
 
 int main() {
-
-    
-     RSA* rsa_private_key = getPrivateKey("private_key.pem");
+    RSA* rsa_private_key = getPrivateKey("private_key.pem");
     if (!rsa_private_key) {
         return 1;
     }

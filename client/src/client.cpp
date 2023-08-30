@@ -8,7 +8,9 @@
 
 
 int socket_to_serveur(RSA* rsa_private_key, RSA* rsa_public_key, const char* message){
-        // Création du socket
+    /*
+    Fonction qui envoie le socket au serveur et qui reçoit le socket du serveur
+    */
     int clientSocket = socket(AF_INET, SOCK_STREAM, 0);
     if (clientSocket == -1) {
         std::cerr << "Erreur lors de la création du socket." << std::endl;
@@ -19,8 +21,8 @@ int socket_to_serveur(RSA* rsa_private_key, RSA* rsa_public_key, const char* mes
     sockaddr_in serverAddress;
     serverAddress.sin_family = AF_INET;
     serverAddress.sin_port = htons(32034); // Port du serveur
-    serverAddress.sin_addr.s_addr = inet_addr("127.0.0.1");
-    //serverAddress.sin_addr.s_addr = inet_addr("51.68.123.161"); // Adresse IP du serveur
+    //serverAddress.sin_addr.s_addr = inet_addr("127.0.0.1");
+    serverAddress.sin_addr.s_addr = inet_addr("51.68.123.161"); // Adresse IP du serveur
     
     // Connexion au serveur
     if (connect(clientSocket, (struct sockaddr *)&serverAddress, sizeof(serverAddress)) == -1) {
@@ -37,6 +39,10 @@ int socket_to_serveur(RSA* rsa_private_key, RSA* rsa_public_key, const char* mes
 
     // Envoyer les données chiffrées
     send(clientSocket, encrypted.data(), encrypted_size, 0);
+
+    //send(clientSocket, message, strlen(message), 0);
+
+
 
    /// Réception de données du serveur
     size_t encrypted_size_serveur;
@@ -68,7 +74,6 @@ int main() {
 
     socket_to_serveur(rsa_private_key, rsa_public_key, "Hello, server!");
 
-    sleep(3);
 
     socket_to_serveur(rsa_private_key, rsa_public_key, "Hello, ca marche!");
 
