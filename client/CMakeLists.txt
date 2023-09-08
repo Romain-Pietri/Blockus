@@ -10,6 +10,8 @@ set(SOURCES
    src/client.cpp
    src/cryptage.cpp
    src/cryptage.hpp
+   src/piece.cpp
+   src/piece.hpp
 )
 
 # Declare the executable
